@@ -1,32 +1,58 @@
+![Replay](./Replay__.png)
+
+# Replay
+
+tvOS application that converts an Apple TV into to a digital signage / kiosk
+
+## Highlight Features
+
+- Plays video on launch
+- Loops infinitely
+- Allows for airplay mirroring on top of the video and resumes once it's turned off
+- In conjunction with MDM, can be locked onto screen without any input from remote or remote app (on iPhone) to be a true Kiosk!
 
 
-# replay-app-for-tvos
+## Description
 
-## Overview
+The application is designed to start running a video on launch and keeping running in an infinite loop. The video being played can be hosted in any public facing server. If you don't have any servers that you can host the videos on, a free AWS S3 account (Free storage up to 5GB) can be used to host the video.
 
-## Try it out
+## Supported Video Formats
 
-### Prerequisites
+-	H.264 video up to 1080p, 30 frames per second, High or Main Profile level 4.0 or lower, Baseline profile level 3.0 or lower with AAC-LC audio up to 160 Kbps per channel, 48kHz, stereo audio in .m4v, .mp4, and .mov file formats
+-	MPEG-4 video up to 2.5 Mbps, 640 by 480 pixels, 30 frames per second, Simple Profile with AAC-LC audio up to 160 Kbps, 48kHz, stereo audio in .m4v, .mp4, and .mov file formats 
+-	Motion JPEG (M-JPEG) up to 35 Mbps, 1280 by 720 pixels, 30 frames per second, audio in ulaw, PCM stereo audio in .avi file format
 
-* Prereq 1
-* Prereq 2
-* Prereq 3
+## Customization
 
-### Build & Run
+To customize the applcation for your needs, follow the steps below:
 
-1. Step 1
-2. Step 2
-3. Step 3
+STEP 1: Update the bundleID and link your Apple Developer Account
 
-## Documentation
+STEP 2: Edit the URL for the video that you'd like to play 
 
-## Releases & Major Branches
+```
+// URL of the Video
+var url = "https://HOST/video.mp4"
+```
 
-## Contributing
+STEP 3 (Optional): Customize the Icon and Top Shelf images
 
-The replay-app-for-tvos project team welcomes contributions from the community. If you wish to contribute code and you have not
-signed our contributor license agreement (CLA), our bot will update the issue when you open a Pull Request. For any
-questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq). For more detailed information,
-refer to [CONTRIBUTING.md](CONTRIBUTING.md).
+Here's a [link](https://developer.apple.com/design/resources/) to Apple's design resources for template
+For more information on icon and top shelf images for tvOS, Refer [this] (https://developer.apple.com/tvos/human-interface-guidelines/icons-and-images/)
 
-## License
+## Deployment
+
+Apple has made significant improvements to management capabilities of Apple TVs with tvOS 10.2 with the introduction of [DEP](https://support.apple.com/en-us/HT204142) and Enterprise Application Management.
+
+### Enrollment
+- DEP on tvOS allows for a true Zero-Touch deployment with the a mode known as "Auto Advance Setup" - which when configured in the DEP profile assigned to the Apple TV, allows the Apple TV to enroll into MDM and skip all the screens to go straight to the spring board within 30seconds of network active when connected to Ethernet. Essentially, with this mode the setup would be 1) Connect Apple TV to power 2) Connect to Ethernet and wait 30 seconds and watch the rest unfold
+
+### Application Management
+- Enterprise applications can now be managed for tvOS and be downloaded and installed automatically on enrollment
+
+### Configuration Policies
+- Once the application has been installed, a configuration policy known as 'Single App Mode' with the reference of the bundle ID of this application can be deployed to the devices to automatically launch the applicaiton and lock it to the screen
+- In addition to the 'Single App Mode' policy, there are few more restrictions that can be added on top to enforce security such as : 1) Force incoming Airplay Requests for pairing password 2) Restrict pairing Remote app (iPhone)
+
+
+
