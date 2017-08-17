@@ -10,7 +10,7 @@ import UIKit
 import AVFoundation
 import AVKit
 
-class ViewController: UIViewController, AVAssetResourceLoaderDelegate {
+class ViewController: UIViewController {
     
     let media = "https://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4"
     var player: AVPlayer? = nil
@@ -127,6 +127,8 @@ class ViewController: UIViewController, AVAssetResourceLoaderDelegate {
             self.player?.actionAtItemEnd = .none
             
             let controller = AVPlayerViewController()
+            controller.showsPlaybackControls = false
+            controller.delegate = self
             controller.player = self.player
             
             // Modally present the player and call the player's play() method when complete.
@@ -203,6 +205,18 @@ class ViewController: UIViewController, AVAssetResourceLoaderDelegate {
 
 // MARK:
 // MARK: Extensions
+
+extension ViewController : AVAssetResourceLoaderDelegate {
+    // We don't really have anything to do here.
+}
+
+extension ViewController : AVPlayerViewControllerDelegate {
+    func playerViewController(_ playerViewController: AVPlayerViewController, restoreUserInterfaceForPictureInPictureStopWithCompletionHandler completionHandler: @escaping (Bool) -> Void) {
+            self.present(playerViewController, animated: true) {
+                completionHandler(true)
+        }
+    }
+}
 
 extension AVPlayer {
     func restart() -> Void {
