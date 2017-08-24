@@ -1,4 +1,4 @@
-![Replay](./Replay__.png)
+![Replay](./Replay_.png)
 
 # Replay
 
