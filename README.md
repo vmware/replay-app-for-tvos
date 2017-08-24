@@ -8,13 +8,14 @@ tvOS application that converts an Apple TV into to a digital signage / kiosk
 
 - Plays video on launch
 - Loops infinitely
-- Allows for airplay mirroring on top of the video and resumes once it's turned off
+- Allows for airplay mirroring on top of the video and resumes once session is terminated
+- Cached video for replay, conserving network bandwidth
 - In conjunction with MDM, can be locked onto screen without any input from remote or remote app (on iPhone) to be a true Kiosk!
 
 
 ## Description
 
-The application is designed to start running a video on launch and keeping running in an infinite loop. The video being played can be hosted in any public facing server. If you don't have any servers that you can host the videos on, a free AWS S3 account (Free storage up to 5GB) can be used to host the video.
+The application is designed to start a playlist of videos on launch and keeping running in an infinite loop. The videos being played can be hosted in any public facing server. If you don't have any servers that you can host the videos on, a free AWS S3 account (Free storage up to 5GB) can be used.
 
 ## Supported Video Formats
 
