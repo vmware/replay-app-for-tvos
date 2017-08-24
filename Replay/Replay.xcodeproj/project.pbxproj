@@ -203,7 +203,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0830;
 				LastUpgradeCheck = 0830;
-				ORGANIZATIONNAME = "Rajiv Singh";
+				ORGANIZATIONNAME = VMware;
 				TargetAttributes = {
 					44A51DEA1F434820008A1C22 = {
 						CreatedOnToolsVersion = 8.3.3;
@@ -249,7 +249,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				44A51DF61F434820008A1C22 /* Assets.xcassets in Resources */,
 				44A51DF41F434820008A1C22 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

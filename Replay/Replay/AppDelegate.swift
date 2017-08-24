@@ -2,9 +2,13 @@
 //  AppDelegate.swift
 //  Replay
 //
-//  Created by Rajiv Singh on 8/15/17.
-//  Copyright © 2017 Rajiv Singh. All rights reserved.
-//
+//  Created by Rajiv Singh and Naveen Pitchandi on 8/24/17.
+//  Copyright 2017 VMware, Inc. All Rights Reserved.
+
+//This product is licensed to you under the BSD-2 license (the "License").  You may not use this product except in compliance with the BSD-2 License.
+
+//This product may include a number of subcomponents with separate copyright notices and license terms. Your use of these subcomponents is subject to the terms and conditions of the subcomponent's license, as noted in the LICENSE file.
+
 
 import UIKit
 
