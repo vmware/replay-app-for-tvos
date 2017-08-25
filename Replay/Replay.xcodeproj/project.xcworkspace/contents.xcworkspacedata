@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:Replay.xcodeproj">
+      location = "self:/Users/npitchandi/Documents/replay-app-for-tvos/Replay/Replay.xcodeproj">
    </FileRef>
 </Workspace>
