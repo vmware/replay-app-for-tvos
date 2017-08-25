@@ -20,6 +20,7 @@ class ViewController: UIViewController {
     
     let media = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
     var player: AVPlayer? = nil
+    var playerInitialized = false
     
     @IBOutlet var statusLabel : UILabel? = nil
     
@@ -38,7 +39,11 @@ class ViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        initPlayer()
+        
+        if playerInitialized == false {
+            playerInitialized = true
+            initPlayer()
+        }
     }
     
     // MARK:
@@ -254,7 +259,7 @@ extension AVURLAsset {
     
     func downloadPath(create: Bool = false) -> URL? {
         
-        guard let directory = self.url.absoluteString.sha256() else {
+        guard let directory = self.url.absoluteString.sha512() else {
             return nil
         }
         
@@ -262,7 +267,7 @@ extension AVURLAsset {
             return nil
         }
         
-        let filename = "media.mp4"
+        let filename = "media.mov"
         let directoryURL = documentsDirectory.appendingPathComponent(directory)
         
         if create {
@@ -280,10 +285,10 @@ extension AVURLAsset {
 }
 
 extension String {
-    func sha256() -> String? {
+    func sha512() -> String? {
         
         if let stringData = self.data(using: String.Encoding.utf8) {
-            if let hash = stringData.sha256() {
+            if let hash = stringData.sha512() {
                 return hash.base64EncodedString()
             }
         }
@@ -293,11 +298,11 @@ extension String {
 }
 
 extension Data {
-    func sha256() -> Data? {
+    func sha512() -> Data? {
         
-        var hash = [UInt8](repeating: 0,  count: Int(CC_SHA256_DIGEST_LENGTH))
+        var hash = [UInt8](repeating: 0,  count: Int(CC_SHA512_DIGEST_LENGTH))
         self.withUnsafeBytes {
-            _ = CC_SHA256($0, CC_LONG(self.count), &hash)
+            _ = CC_SHA512($0, CC_LONG(self.count), &hash)
         }
         return Data(bytes: hash)
         
