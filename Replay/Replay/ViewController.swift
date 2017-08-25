@@ -18,7 +18,7 @@ import AVKit
 
 class ViewController: UIViewController {
     
-    let media = "https://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4"
+    let media = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
     var player: AVPlayer? = nil
     
     @IBOutlet var statusLabel : UILabel? = nil
