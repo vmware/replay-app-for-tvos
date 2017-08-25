@@ -18,6 +18,7 @@ import AVKit
 
 class ViewController: UIViewController {
     
+    // URL of the Video
     let media = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
     var player: AVPlayer? = nil
     var playerInitialized = false
