@@ -16,12 +16,22 @@ import UIKit
 import AVFoundation
 import AVKit
 
+enum PlaybackState {
+    case unknown
+    case initializing
+    case initialized
+    case playing
+    case paused
+    case stopped
+    case unplayable
+}
+
 class ViewController: UIViewController {
     
     // URL of the Video
-    let media = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+    let media = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/DesigningForGoogleCast.mp4"
     var player: AVPlayer? = nil
-    var playerInitialized = false
+    var playbackStatus : PlaybackState = .unknown
     
     @IBOutlet var statusLabel : UILabel? = nil
     
@@ -41,9 +51,11 @@ class ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        if playerInitialized == false {
-            playerInitialized = true
+        if playbackStatus == .unknown {
+            playbackStatus = .initializing
             initPlayer()
+        }else if playbackStatus == .playing {
+            self.statusLabel?.text = "Player interrupted"
         }
     }
     
@@ -73,7 +85,9 @@ class ViewController: UIViewController {
     }
     
     func initPlayer() -> Void {
+        
         guard let url = URL(string: media) else {
+            playbackStatus = .unplayable
             self.statusLabel?.text = "No media specified for playback"
             return
         }
@@ -100,18 +114,22 @@ class ViewController: UIViewController {
                 case .loaded:
                     // Sucessfully loaded. Continue processing.
                     self.statusLabel?.text = "Player initialized"
+                    self.playbackStatus = .initialized
                     self.startPlayer(forAsset: asset)
                     break
                 case .failed:
                     // Handle error
+                    self.playbackStatus = .unplayable
                     self.statusLabel?.text = "Failed to initialize the player. Error: \(error?.localizedDescription ?? "")"
                     break
                 case .cancelled:
                     // Terminate processing
+                    self.playbackStatus = .unplayable
                     self.statusLabel?.text = "Initializing player was cancelled. Error: \(error?.localizedDescription ?? "")"
                     break
                 default:
                     // Handle all other cases
+                    self.playbackStatus = .unplayable
                     self.statusLabel?.text = "Unknown error while initilizing the player"
                     break
                 }
@@ -123,7 +141,9 @@ class ViewController: UIViewController {
     // MARK: Playback
     
     func startPlayer(forAsset asset: AVURLAsset?) -> Void {
+        
         guard let mediaAsset = asset else {
+            self.playbackStatus = .unplayable
             self.statusLabel?.text = "Media asset not present"
             return
         }
@@ -131,6 +151,7 @@ class ViewController: UIViewController {
         let playerItem = AVPlayerItem.init(asset: mediaAsset)
         
         if let playerViewController = self.presentedViewController as? AVPlayerViewController {
+            self.playbackStatus = .playing
             playerViewController.player?.replaceCurrentItem(with: playerItem)
             playerViewController.player?.restart()
         }else {
@@ -138,23 +159,60 @@ class ViewController: UIViewController {
             self.player = AVPlayer.init(playerItem: playerItem)
             self.player?.actionAtItemEnd = .none
             
-            let controller = AVPlayerViewController()
-            controller.showsPlaybackControls = false
-            controller.delegate = self
-            controller.player = self.player
-            
-            // Modally present the player and call the player's play() method when complete.
-            self.present(controller, animated: true) {
-                controller.player?.play()
+            if let controller = constructPlayerViewController(player: self.player) {
+                // Modally present the player and call the player's play() method when complete.
+                self.present(controller, animated: true) {
+                    self.playbackStatus = .playing
+                    controller.player?.play()
+                }
             }
         }
+    }
+    
+    func resumePlayer(player: AVPlayer?) -> Void {
+        
+        guard (self.playbackStatus == .playing || self.playbackStatus == .paused || self.playbackStatus == .stopped) else {
+            return
+        }
+        
+        guard player != nil else {
+            return
+        }
+        
+        if let playerViewController = self.presentedViewController as? AVPlayerViewController {
+            playerViewController.player?.play()
+        }else {
+            
+            if let controller = constructPlayerViewController(player: player) {
+                // Modally present the player and call the player's play() method when complete.
+                self.present(controller, animated: true) {
+                    self.playbackStatus = .playing
+                    controller.player?.play()
+                }
+            }
+        }
+    }
+    
+    func constructPlayerViewController(player: AVPlayer?) -> AVPlayerViewController? {
+        
+        guard player != nil else {
+            return nil
+        }
+        
+        let controller = AVPlayerViewController()
+        controller.showsPlaybackControls = false
+        controller.delegate = self
+        controller.player = player
+        
+        return controller
     }
     
     // MARK:
     // MARK: AVPlayer notifications
     
     func registerNotifications() -> Void {
-        NotificationCenter.default.addObserver(self, selector: #selector(playerItemDidReachEnd(notification:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(playerItemDidReachEnd(notification:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: self.player?.currentItem)
+        NotificationCenter.default.addObserver(self, selector: #selector(applicationDidBecomeActive(notification:)), name: .UIApplicationDidBecomeActive, object: nil)
     }
     
     func deregisterNotifications() -> Void {
@@ -178,6 +236,7 @@ class ViewController: UIViewController {
         }
         
         if asset.isExportable == false {
+            // Asset is not exportable. We continue playing on network.
             self.player?.restart()
             return
         }
@@ -198,6 +257,10 @@ class ViewController: UIViewController {
                 }
             }
         })
+    }
+    
+    func applicationDidBecomeActive(notification: Notification) -> Void {
+        self.resumePlayer(player: self.player)
     }
     
     // MARK:
