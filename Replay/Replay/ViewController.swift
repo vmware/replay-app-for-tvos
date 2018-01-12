@@ -323,25 +323,28 @@ extension AVURLAsset {
     
     func downloadPath(create: Bool = false) -> URL? {
         
-        guard let directory = self.url.absoluteString.sha512() else {
+        let urlData = self.url.absoluteString.data(using: .utf8)
+        let base64EncodedString = urlData?.base64EncodedString()
+        
+        guard let urlDirectory = base64EncodedString else {
             return nil
         }
         
-        guard let documentsDirectory: URL = FileManager.init().urls(for: FileManager.SearchPathDirectory.documentDirectory, in: FileManager.SearchPathDomainMask.userDomainMask).last else {
+        guard let documentsDirectory: URL = FileManager.init().urls(for: FileManager.SearchPathDirectory.cachesDirectory, in: FileManager.SearchPathDomainMask.userDomainMask).last else {
             return nil
         }
         
-        let filename = "media.mov"
-        let directoryURL = documentsDirectory.appendingPathComponent(directory)
+        let directoryURL = documentsDirectory.appendingPathComponent(urlDirectory)
         
         if create {
             do {
                 try FileManager.init().createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
             }catch let error as NSError {
-                print("Failed to create asset's download path with error: \(error.localizedDescription)")
+                print("Failed to create asset’s download path with error: \(error.localizedDescription)")
             }
         }
         
+        let filename = "media.mov"
         let mediaURL = directoryURL.appendingPathComponent(filename)
         
         return mediaURL
