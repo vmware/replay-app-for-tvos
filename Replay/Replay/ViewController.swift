@@ -48,7 +48,6 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
         registerNotifications()
         initAudioSession()
-        //        NSUserDefaultsManager.initializer()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -239,16 +238,6 @@ class ViewController: UIViewController {
         
         if asset.isDownloaded() {
             // Asset was already downloaded. We play it again.
-            //            if(isLastItemPlayed(asset: asset)){
-            //                let playerItemArray = playerItemArrayCollection(forAsset: self.assetArray)
-            //                self.player = AVQueuePlayer.init(items: playerItemArray)
-            //                self.player?.actionAtItemEnd = .none
-            //                self.player?.play()
-            //            }
-            //            else{
-            //                self.player?.advanceToNextItem()
-            //            }
-            //            return
             self.handlePlayback()
             return
         }
