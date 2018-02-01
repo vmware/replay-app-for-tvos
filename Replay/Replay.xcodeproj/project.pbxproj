@@ -208,7 +208,7 @@
 				TargetAttributes = {
 					44A51DEA1F434820008A1C22 = {
 						CreatedOnToolsVersion = 8.3.3;
-						DevelopmentTeam = 7SUQPKEF96;
+						DevelopmentTeam = MXNCQ3W382;
 						ProvisioningStyle = Automatic;
 					};
 					44A51DFB1F434820008A1C22 = {
@@ -422,11 +422,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
-				DEVELOPMENT_TEAM = 7SUQPKEF96;
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = MXNCQ3W382;
 				INFOPLIST_FILE = Replay/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.air-watch.Replay";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = Replay/BridgingHeader.h;
 				SWIFT_VERSION = 3.0;
 			};
@@ -437,11 +440,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
-				DEVELOPMENT_TEAM = 7SUQPKEF96;
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = MXNCQ3W382;
 				INFOPLIST_FILE = Replay/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.air-watch.Replay";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = Replay/BridgingHeader.h;
 				SWIFT_VERSION = 3.0;
 			};
