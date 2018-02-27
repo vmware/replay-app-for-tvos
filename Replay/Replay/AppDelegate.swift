@@ -19,7 +19,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        
+        // set default prefs:
+        
+        let defaultPrefs = [ "mediaURL": "https://munkitest.prowarehouse.nl/replay/PWH-Movie.m4v"]
+        UserDefaults.standard.register(defaults: defaultPrefs)
+        
         return true
     }
 
