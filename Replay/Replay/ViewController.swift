@@ -29,7 +29,7 @@ enum PlaybackState {
 class ViewController: UIViewController {
     
     // URL of the Video
-    let media = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/DesigningForGoogleCast.mp4"
+    let media = "https://munkitest.prowarehouse.nl/replay/PWH-Movie.m4v"
     var player: AVPlayer? = nil
     var playbackStatus : PlaybackState = .unknown
     
