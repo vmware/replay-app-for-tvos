@@ -251,7 +251,6 @@ class ViewController: UIViewController {
         
         exporter?.outputURL = asset.downloadPath(create: true)
         exporter?.outputFileType = AVFileTypeQuickTimeMovie
-        
         exporter?.exportAsynchronously(completionHandler: {
             DispatchQueue.main.async {
                 self.handlePlayback()
