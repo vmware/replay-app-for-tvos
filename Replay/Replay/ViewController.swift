@@ -29,7 +29,7 @@ enum PlaybackState {
 class ViewController: UIViewController {
     
     // URL of the Video
-    let media = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/DesigningForGoogleCast.mp4"
+    let media = "https://munkitest.prowarehouse.nl/replay/PWH-Movie.m4v"
     var player: AVPlayer? = nil
     var playbackStatus : PlaybackState = .unknown
     
@@ -86,6 +86,12 @@ class ViewController: UIViewController {
     
     func initPlayer() -> Void {
         
+        guard let media = UserDefaults.standard.string(forKey: "mediaURL") else {
+            playbackStatus = .unplayable
+            self.statusLabel?.text = "No media preference for playback"
+            return
+        }
+        
         guard let url = URL(string: media) else {
             playbackStatus = .unplayable
             self.statusLabel?.text = "No media specified for playback"
@@ -100,7 +106,7 @@ class ViewController: UIViewController {
             if let localAssetURL = asset.downloadPath() {
                 asset = AVURLAsset.init(url: localAssetURL)
             }
-        }else {
+        } else {
             // Asset isn't downloaded yet. Set its resource loader so that we can export it later when its finished.
             asset.resourceLoader.setDelegate(self, queue: DispatchQueue.main)
         }
