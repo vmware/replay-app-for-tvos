@@ -10,8 +10,6 @@
 
 //This product may include a number of subcomponents with separate copyright notices and license terms. Your use of these subcomponents is subject to the terms and conditions of the subcomponent's license, as noted in the LICENSE file.
 
-
-
 import UIKit
 import AVFoundation
 import AVKit
@@ -29,8 +27,8 @@ enum PlaybackState {
 class ViewController: UIViewController {
     
     // URL of the Video
-    let media = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/DesigningForGoogleCast.mp4"
-    var player: AVPlayer? = nil
+    var urlArray: [String] = ["http://techslides.com/demos/sample-videos/small.mp4", "https://media.w3.org/2010/05/sintel/trailer.mp4"]
+    var player: AVQueuePlayer? = nil
     var playbackStatus : PlaybackState = .unknown
     
     @IBOutlet var statusLabel : UILabel? = nil
@@ -43,7 +41,6 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        
         registerNotifications()
         initAudioSession()
     }
@@ -86,36 +83,33 @@ class ViewController: UIViewController {
     
     func initPlayer() -> Void {
         
-        guard let url = URL(string: media) else {
+        if urlArray.isEmpty {
             playbackStatus = .unplayable
             self.statusLabel?.text = "No media specified for playback"
             return
         }
         
-        let playableKey = "playable"
-        var asset = AVURLAsset.init(url: url, options: [AVURLAssetAllowsCellularAccessKey : false])
+        let asset = assets(forMediaURLs: urlArray)
         
-        if asset.isDownloaded() {
-            // Asset was already downloaded before. So we recreate it from the local URL.
-            if let localAssetURL = asset.downloadPath() {
-                asset = AVURLAsset.init(url: localAssetURL)
-            }
-        }else {
-            // Asset isn't downloaded yet. Set its resource loader so that we can export it later when its finished.
-            asset.resourceLoader.setDelegate(self, queue: DispatchQueue.main)
+        guard let currentAssetPlaying = asset.first else {
+            playbackStatus = .unplayable
+            self.statusLabel?.text = "Could not create Assets from the supplied media URL's"
+            return
         }
         
-        asset.loadValuesAsynchronously(forKeys: [playableKey], completionHandler: {
+        let playableKey = "playable"
+        
+        // In future, we should load all assets at once and add to player queue only ones which are playable.
+        currentAssetPlaying.loadValuesAsynchronously(forKeys: [playableKey], completionHandler: {
             DispatchQueue.main.async {
-                
                 var error: NSError? = nil
-                let status = asset.statusOfValue(forKey: playableKey, error: &error)
+                let status = currentAssetPlaying.statusOfValue(forKey: playableKey, error: &error)
                 switch status {
                 case .loaded:
                     // Sucessfully loaded. Continue processing.
                     self.statusLabel?.text = "Player initialized"
                     self.playbackStatus = .initialized
-                    self.startPlayer(forAsset: asset)
+                    self.startPlayer(forAssets: asset)
                     break
                 case .failed:
                     // Handle error
@@ -140,37 +134,34 @@ class ViewController: UIViewController {
     // MARK:
     // MARK: Playback
     
-    func startPlayer(forAsset asset: AVURLAsset?) -> Void {
+    func startPlayer(forAssets asset: [AVURLAsset]) -> Void {
         
-        guard let mediaAsset = asset else {
+        if asset.isEmpty {
             self.playbackStatus = .unplayable
             self.statusLabel?.text = "Media asset not present"
             return
         }
         
-        let playerItem = AVPlayerItem.init(asset: mediaAsset)
+        let playerItemArray = playerItemArrayCollection(forAsset: asset)
+        if playerItemArray.isEmpty {
+            self.playbackStatus = .unplayable
+            self.statusLabel?.text = "Media asset not present"
+            return
+        }
         
-        if let playerViewController = self.presentedViewController as? AVPlayerViewController {
-            self.playbackStatus = .playing
-            playerViewController.player?.replaceCurrentItem(with: playerItem)
-            playerViewController.player?.restart()
-        }else {
-            // Create a new AVPlayerViewController and pass it a reference to the player.
-            self.player = AVPlayer.init(playerItem: playerItem)
-            self.player?.actionAtItemEnd = .none
-            
-            if let controller = constructPlayerViewController(player: self.player) {
-                // Modally present the player and call the player's play() method when complete.
-                self.present(controller, animated: true) {
-                    self.playbackStatus = .playing
-                    controller.player?.play()
-                }
+        // Create a new AVPlayerViewController and pass it a reference to the player.
+        self.player = AVQueuePlayer.init(items: playerItemArray)
+        self.player?.actionAtItemEnd = .none
+        if let controller = constructPlayerViewController(player: self.player) {
+            // Modally present the player and call the player's play() method when complete.
+            self.present(controller, animated: true) {
+                self.playbackStatus = .playing
+                controller.player?.play()
             }
         }
     }
     
-    func resumePlayer(player: AVPlayer?) -> Void {
-        
+    func resumePlayer(player: AVQueuePlayer?) -> Void {
         guard (self.playbackStatus == .playing || self.playbackStatus == .paused || self.playbackStatus == .stopped) else {
             return
         }
@@ -182,7 +173,6 @@ class ViewController: UIViewController {
         if let playerViewController = self.presentedViewController as? AVPlayerViewController {
             playerViewController.player?.play()
         }else {
-            
             if let controller = constructPlayerViewController(player: player) {
                 // Modally present the player and call the player's play() method when complete.
                 self.present(controller, animated: true) {
@@ -193,8 +183,7 @@ class ViewController: UIViewController {
         }
     }
     
-    func constructPlayerViewController(player: AVPlayer?) -> AVPlayerViewController? {
-        
+    func constructPlayerViewController(player: AVQueuePlayer?) -> AVPlayerViewController? {
         guard player != nil else {
             return nil
         }
@@ -203,7 +192,6 @@ class ViewController: UIViewController {
         controller.showsPlaybackControls = false
         controller.delegate = self
         controller.player = player
-        
         return controller
     }
     
@@ -231,13 +219,12 @@ class ViewController: UIViewController {
         
         if asset.isDownloaded() {
             // Asset was already downloaded. We play it again.
-            self.player?.restart()
+            self.player?.playNextItem()
             return
         }
         
         if asset.isExportable == false {
-            // Asset is not exportable. We continue playing on network.
-            self.player?.restart()
+            self.player?.playNextItem()
             return
         }
         
@@ -245,16 +232,10 @@ class ViewController: UIViewController {
         
         exporter?.outputURL = asset.downloadPath(create: true)
         exporter?.outputFileType = AVFileTypeQuickTimeMovie
-        
         exporter?.exportAsynchronously(completionHandler: {
             DispatchQueue.main.async {
-                if exporter?.status == .completed {
-                    // Asset exported successfully. We configure the player with this downloaded  asset and play it again.
-                    self.initPlayer()
-                }else {
-                    // Asset export failed. Restart the media.
-                    self.player?.restart()
-                }
+                self.player?.playNextItem()
+                return
             }
         })
     }
@@ -276,19 +257,77 @@ class ViewController: UIViewController {
         spinner.stopAnimating()
         spinner.removeFromSuperview()
     }
+    
+    func assets(forMediaURLs mediaURLs: [String]) -> [AVURLAsset] {
+        var assetArray = [AVURLAsset]()
+        
+        for media in urlArray {
+            guard let url = URL.init(string: media) else {
+                continue
+            }
+            
+            var asset = AVURLAsset.init(url: url, options: [AVURLAssetAllowsCellularAccessKey : false])
+            if asset.isDownloaded() {
+                // Asset was already downloaded before. So we recreate it from the local URL.
+                if let localAssetURL = asset.downloadPath() {
+                    asset = AVURLAsset.init(url: localAssetURL)
+                }
+            }else {
+                // Asset isn't downloaded yet. Set its resource loader so that we can export it later when its finished.
+                asset.resourceLoader.setDelegate(self, queue: DispatchQueue.main)
+            }
+            assetArray.append(asset)
+        }
+        
+        return assetArray
+    }
+    
+    func playerItemArrayCollection(forAsset asset: [AVURLAsset]) -> [AVPlayerItem]{
+        var playerItemArray = [AVPlayerItem]()
+        for mediaAsset in asset{
+            let playerItemTemp = AVPlayerItem.init(asset: mediaAsset)
+            playerItemArray.append(playerItemTemp)
+        }
+        return playerItemArray
+    }
+    
+    func isLastItemPlayed(asset: AVURLAsset) -> Bool {
+        let lastURLOfMedia : String = self.urlArray.last!
+        if(asset.url.absoluteString.range(of: lastURLOfMedia) != nil){
+            return true
+        }
+        else{
+            return false
+        }
+    }
+    
+    
 }
 
 // MARK:
 // MARK: Extensions
 
+extension AVQueuePlayer {
+    func playNextItem(){
+        let currentItem = self.currentItem
+        self.advanceToNextItem()
+        
+        if let item = currentItem {
+            item.seek(to: kCMTimeZero)
+            if self.canInsert(item, after: nil){
+                self.insert(item, after: nil)
+            }
+        }
+    }
+}
 extension ViewController : AVAssetResourceLoaderDelegate {
     // We don't really have anything to do here.
 }
 
 extension ViewController : AVPlayerViewControllerDelegate {
-    func playerViewController(_ playerViewController: AVPlayerViewController, restoreUserInterfaceForPictureInPictureStopWithCompletionHandler completionHandler: @escaping (Bool) -> Void) {
-            self.present(playerViewController, animated: true) {
-                completionHandler(true)
+    func playerViewController(_ playerViewController: AVPlayerViewController, shouldPresent proposal: AVContentProposal, restoreUserInterfaceForPictureInPictureStopWithCompletionHandler completionHandler: @escaping (Bool) -> Void) {
+        self.present(playerViewController, animated: true) {
+            completionHandler(true)
         }
     }
 }
@@ -343,23 +382,20 @@ extension AVURLAsset {
                 print("Failed to create asset’s download path with error: \(error.localizedDescription)")
             }
         }
-        
-        let filename = "media.mov"
+        let fileExtension = ".mov"
+        let filename = "\(urlDirectory)\(fileExtension)"
         let mediaURL = directoryURL.appendingPathComponent(filename)
-        
         return mediaURL
     }
 }
 
 extension String {
     func sha512() -> String? {
-        
         if let stringData = self.data(using: String.Encoding.utf8) {
             if let hash = stringData.sha512() {
                 return hash.base64EncodedString()
             }
         }
-        
         return nil
     }
 }
@@ -374,6 +410,4 @@ extension Data {
         return Data(bytes: hash)
         
     }
-
 }
-
